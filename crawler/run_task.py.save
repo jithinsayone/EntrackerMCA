@@ -1,0 +1,52 @@
+
+from crawler.tasks import  searching_cin
+import time
+import json
+import  requests
+
+CPANEL_IP = 'http://3.130.9.101'
+
+def get_all_cin():
+    """
+    This function get all CIN in database.
+    :return:
+    """
+    cin_list = requests.get(url=CPANEL_IP + '/api/mca_info/cinList')
+    cin_list = json.loads(cin_list.json())
+    cin = []
+    for i in cin_list:
+       cin.append(i.get("company_cin"))
+    return cin
+
+def get_error_cin():
+    """
+    This function get all CIN in database.
+    :return:
+    """
+    cin_list = requests.get(url=CPANEL_IP + '/api/mca_info/ErrorcinList')
+    cin_list = json.loads(cin_list.json())
+    cin = []
+    for i in cin_list:
+       cin.append(i.get("company_cin"))
+    return cin
+
+if __name__ == '__main__':
+    choice = int(input("ENTER Choice \n 1. Full CIN Crawl \n 2. Error CIN Crawl \n - "))
+    if choice ==1 :
+       cins =  get_all_cin()
+    else:
+       cins = get_error_cin()
+    cins = list(set(cins))
+    print("TOTAL Unique CIN :", len(cins))
+    cins = cins [:100]
+    for cin in cins:
+      print("index count:", cins.index(cin))
+      #searching_cin.delay('18.116.5.193',str(cin).strip(),True)
+      searching_cin.apply_async(args=['18.116.5.193',str(cin).strip(),True],
+                        queue='mca_crawler',
+                        routing_key='mca_crawler.website'
+                        )
+      #time.sleep(1)
+      if  cins.index(cin)%2 == 0  and cins.index(cin) != 0:
+         time.sleep(10)
+    print("LAST CHOICE:",choice)
