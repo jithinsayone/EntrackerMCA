@@ -86,12 +86,14 @@ def run_crawler(cins, run_loop):
 
 
 if __name__ == '__main__':
-    choice = int(input("ENTER Choice \n 1. Daily Run \n 2. Error CIN Crawl \n - "))
-    if choice == 1:
-        cins = get_all_cin()
-        # cins = list(set(cins))
-        run_crawler(cins, True)
-    else:
-        cins = get_error_cin()
-        # cins = list(set(cins))
-        run_crawler(cins, False)
+    cins = get_all_cin()
+    run_crawler(cins, True)
+    # choice = int(input("ENTER Choice \n 1. Daily Run \n 2. Error CIN Crawl \n - "))
+    # if choice == 1:
+    #     cins = get_all_cin()
+    #     # cins = list(set(cins))
+    #     run_crawler(cins, True)
+    # else:
+    #     cins = get_error_cin()
+    #     # cins = list(set(cins))
+    #     run_crawler(cins, False)
