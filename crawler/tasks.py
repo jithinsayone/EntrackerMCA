@@ -14,7 +14,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.common.exceptions import NoSuchElementException
 
-from crawler.start_celery import app
+#from crawler.start_celery import app
 CPANEL_IP = 'http://3.130.9.101'
 
 def check_if_ip_blocked(page_source):
@@ -37,11 +37,11 @@ def start_driver():
     This function start  driver with relevent settings
     :return:
     """
-    SELENIUM_DRIVER_PATH = "/home/ubuntu/code/entracker-crawler/chrome_driver/chromedriver_linux"
+    SELENIUM_DRIVER_PATH = "/home/sree/PEM/chromedriver"
     # SELENIUM_DRIVER_PATH = "/home/jithin/Project/KredibleCrawler/chrome_driver/chromedriver_linux"
     chrome_options = Options()
     chrome_options.add_argument('--window-size=1420,1080')
-    chrome_options.add_argument('--headless')
+    #chrome_options.add_argument('--headless')
     chrome_options.add_argument('--no-sandbox')
     chrome_options.add_argument('--disable-dev-shm-usage')
     driver = webdriver.Chrome(SELENIUM_DRIVER_PATH,chrome_options=chrome_options)
@@ -57,7 +57,7 @@ def check_exists_by_xpath(driver, xpath):
     :return:
     """
     try:
-        driver.find_element_by_xpath(xpath)
+        driver.find_element("xpath",xpath)
     except NoSuchElementException:
         return False
     return True
@@ -77,7 +77,7 @@ def get_all_cin():
         cin.append(i.get("company_cin"))
     return cin
 
-@app.task()
+#@app.task()
 def searching_cin(SELENIUM_GRID_IP, cin,company_name, data_push):
     """
     This function search for cin in MCA website
@@ -90,20 +90,20 @@ def searching_cin(SELENIUM_GRID_IP, cin,company_name, data_push):
     try:
         driver = start_driver()
         #driver = start_driver_new(SELENIUM_GRID_IP)
-        main_url = 'https://www.mca.gov.in/mcafoportal/viewPublicDocumentsFilter.do'
+        main_url = 'https://www.mca.gov.in/mcafoportal/viewPublicDocumentsFilter.do'   
         #driver.get('https://www.google.com/')
         driver.get(main_url)
         if check_if_ip_blocked(driver.page_source):
             raise Exception('Ip Blocked')
         time.sleep(random.randint(8, 12))
-        ckecks = driver.find_element_by_xpath('//input[@id="cinChk"]')
+        ckecks = driver.find_element("xpath",'//input[@id="cinChk"]')
         ckecks.click()
         time.sleep(random.randint(0, 2))
-        cin_input = driver.find_element_by_xpath('//input[@id="cinFDetails"]')
+        cin_input = driver.find_element("xpath",'//input[@id="cinFDetails"]')
         time.sleep(random.randint(0, 2))
         cin_input.send_keys(cin)
         time.sleep(random.randint(3, 8))
-        driver.find_element_by_xpath('//input[@id="viewDocuments_0"]').click()
+        driver.find_element("xpath",'//input[@id="viewDocuments_0"]').click()
         time.sleep(random.randint(0, 9))
         if check_exists_by_xpath(driver, '//a[@class="dashboardlinks"]'):
             res = go_to_detailed_page(cin, company_name,driver, data_push)
@@ -114,6 +114,7 @@ def searching_cin(SELENIUM_GRID_IP, cin,company_name, data_push):
     except Exception as ex:
         print("Exception : ", ex)
         driver.quit()
+
     if res:
         with open('cin_sucess.txt',"a") as f:
           f.write("\n"+str(cin))
@@ -165,7 +166,7 @@ def close_popup(driver):
     :return:
     """
     if check_exists_by_xpath(driver, '//a[@id="msgboxclose"]'):
-        driver.find_element_by_xpath('//a[@id="msgboxclose"]').click()
+        driver.find_element("xpath",'//a[@id="msgboxclose"]').click()
 
 
 def get_annual_finance(driver):
@@ -175,13 +176,12 @@ def get_annual_finance(driver):
     :return:
     """
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath(
-        "//select[@name='categoryName']/option[text()='Annual Returns and Balance Sheet eForms']").click()
+    driver.find_element("xpath","//select[@name='categoryName']/option[text()='Annual Returns and Balance Sheet eForms']").click()
     time.sleep(random.randint(1, 3))
     xpath_str = "//select[@name='finacialYear']/option[text()='" + get_year()  + "']"
-    driver.find_element_by_xpath(xpath_str).click()
+    driver.find_element("xpath",xpath_str).click()
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath("//input[@id='viewCategoryDetails_0']").click()
+    driver.find_element("xpath","//input[@id='viewCategoryDetails_0']").click()
     time.sleep(random.randint(0, 9))
     finance_response, finance_doc_status = parse_doc(driver)
     return finance_response, finance_doc_status
@@ -194,12 +194,12 @@ def get_eform(driver):
     :return:
     """
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath("//select[@name='categoryName']/option[text()='Other eForm Documents']").click()
+    driver.find_element("xpath","//select[@name='categoryName']/option[text()='Other eForm Documents']").click()
     time.sleep(random.randint(1, 3))
     xpath_str = "//select[@name='finacialYear']/option[text()='" + get_year() + "']"
-    driver.find_element_by_xpath(xpath_str).click()
+    driver.find_element("xpath",xpath_str).click()
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath("//input[@id='viewCategoryDetails_0']").click()
+    driver.find_element("xpath","//input[@id='viewCategoryDetails_0']").click()
     time.sleep(random.randint(0, 9))
     eform_response, eform_doc_status = parse_doc(driver)
     return eform_response, eform_doc_status
@@ -212,12 +212,12 @@ def get_other_attachments(driver):
     :return:
     """
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath("//select[@name='categoryName']/option[text()='Other Attachments']").click()
+    driver.find_element("xpath","//select[@name='categoryName']/option[text()='Other Attachments']").click()
     time.sleep(random.randint(1, 3))
     xpath_str = "//select[@name='finacialYear']/option[text()='" + get_year() + "']"
-    driver.find_element_by_xpath(xpath_str).click()
+    driver.find_element("xpath",xpath_str).click()
     time.sleep(random.randint(1, 3))
-    driver.find_element_by_xpath("//input[@id='viewCategoryDetails_0']").click()
+    driver.find_element("xpath","//input[@id='viewCategoryDetails_0']").click()
     time.sleep(random.randint(0, 9))
     other_attachments_response, other_attachments_a_doc_status = parse_doc(driver)
     return other_attachments_response, other_attachments_a_doc_status
@@ -306,13 +306,13 @@ def save_to_mongodb(cin, company_name,data,type):
             return False
         connection = pymongo.MongoClient('mongodb://crawler_admin:PassKred12@18.116.5.193:27017/crawler')
         database = connection["crawler"]
-        collection = database["mca_admin"]
+        collection = database["mca_dev"]
         query = {"cin": cin}
         get_old_data = collection.find_one(query)
         if get_old_data:
             old_type_data = get_old_data.get(type)
             if old_type_data:
-                collection.delete_one(query)
+                #collection.delete_one(query)
                 for k, v in data.items():
                     if old_type_data.get(k) is None:
                         new_finance_flag = True
@@ -321,7 +321,7 @@ def save_to_mongodb(cin, company_name,data,type):
                                                "There is a new "+type+" data Added in MCA website: " + v)
                         print("Email Alert Send") if alert_flag else None
             else:
-                collection.delete_one(query)
+                #collection.delete_one(query)
                 alert_flag = send_mail("Alert ! : MCA " + type + " Data added " + company_name,
                                        "There is a new " + type + " data Added in MCA website: " + ','.join(
                                            list(data.values())))
@@ -335,7 +335,7 @@ def save_to_mongodb(cin, company_name,data,type):
             print("Email Alert Send") if alert_flag else None
         data_to_save.update({"cin": cin, type: data})
         # print("DATA:",data_to_save)
-        collection.insert_one(data_to_save)
+        #collection.insert_one(data_to_save)
     except Exception as ex:
         print("EX:", ex)
         return False
@@ -371,7 +371,7 @@ def go_to_detailed_page(cin,company_name, driver, data_push):
     :param data_push:
     :return:
     """
-    driver.find_element_by_xpath('//a[@class="dashboardlinks"]').click()
+    driver.find_element("xpath",'//a[@class="dashboardlinks"]').click()
     if check_if_ip_blocked(driver.page_source):
         raise Exception('Ip Blocked')
     time.sleep(random.randint(0, 9))
@@ -392,8 +392,10 @@ def go_to_detailed_page(cin,company_name, driver, data_push):
 
 
 
-# searching_cin('SELENIUM_GRID_IP', 'U01409PN2017PTC172439', True)
+#searching_cin('SELENIUM_GRID_IP', 'U01409PN2017PTC172439', True)
 # searching_cin('SELENIUM_GRID_IP', 'U74140HR2015FTC055568', True)
-# searching_cin('SELENIUM_GRID_IP', 'U52202TG2020PTC139550','CHIFU AGRITECH PRIVATE LIMITED', True)
+# searching_cin('SELENIUM_GRID_IP', 'U52202TG2020PTC139550','CHIFU AGRITECH PRIVATE LIMITED', False)
+searching_cin('SELENIUM_GRID_IP', 'U65990KA2021PTC145065','CHIFU AGRITECH PRIVATE LIMITED', False)
+searching_cin('SELENIUM_GRID_IP', 'U80903DL2012PTC236595','CHIFU AGRITECH PRIVATE LIMITED', False)
 
 #add company name in task run
